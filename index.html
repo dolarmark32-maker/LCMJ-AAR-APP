@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFTER ACTIVITY REPORT</title>
+    <link rel="stylesheet" href="styles.css" />
+
+  </head>
+  <body>
+
+      <div id="main-container">
+        <div id="bjmp_header">
+        <h3> REPUBLIC OF THE PHILIPPINES</h3>
+        <h3> DEPARTMENT OF INTERIOR AND LOCAL GOVERNMENT</h3>
+        <h1> BUREAU OF JAIL MANAGEMENT AND PENOLOGY</h1>
+        <h1> NEGROS ISLAND REGION </h1>
+        <h1>LA CASTELLANA MUNICIPAL JAIL</h1>
+        <h3>Roxas Street, Brgy Robles, La Castellana, Negros Occidental</h3>
+        <h3>Mobile No. 09850927753/0344326664</h3>
+        <h3>Email Address: nir.lacastellsanamj@bjmp.gov.ph Website: nir.bjmp.gov.ph</h3>
+        </div> <!-- closing bjmp_header -->
+
+
+
+      <div id="form_container">
+        <h1> AFTER ACTIVITY REPORT</h1>
+      <form id="activityReport">
+
+        <div id="head_container">
+        <label for="subject">SUBJECT</label>
+         <textarea id="subject" name="subject" rows="2" cols="40"></textarea>
+
+        <label for="date">DATE</label>
+        <input type="date" name="date" id="date">
+
+        </div> <!-- closing - head_container -->
+
+        <div id="body_container">
+
+          <div id="reference-container">
+            <div class="reference-group">
+              <label for="reference_1">1. REFERENCE </label>
+              <textarea id="reference_1" name="reference[]" rows="2" cols="40"></textarea>
+            </div>
+          </div>
+
+<button type="button" id="add_reference" onclick="addReference()">+</button>
+
+
+        <label for="purpose">2. MISSION/PURPOSE</label>
+        <textarea id="purpose" name="purpose" rows="2" cols="40"></textarea>
+
+        <label for="places_covered">3. PLACES COVERED</label>
+        <textarea id="places_covered" name="places_covered" rows="2" cols="40">
+        </textarea>
+
+        <label for="dates_covered">4. DATES COVERED</label>
+        <input type="text" id="dates_covered" name="dates_covered">
+
+        <label for="participants">5. PARTICIPANTS</label>
+        <textarea id="participants" name="participants" rows="1" cols="40">
+        </textarea>
+
+        <div id="narrative-container">
+          <label for="narrative_1">6. NARRATIVES</label>
+          <div class="narrative-group">
+            <textarea id="narrative_1" name="narrative[]"></textarea>
+          </div>
+        </div>
+
+<button type="button" id="add_narrative" onclick="addNarrative()">+</button>
+
+        <label for="issues_concerns">7. ISSUES/CONCERNS/RECOMMENDATIONS</label>
+        <textarea id="issues_concerns" name="issues_concerns" rows="2" cols="40"></textarea>
+
+
+        <button type="button" onclick="createDoc">GENERATE AFTER ACTIVITY REPORT</button>
+
+        <script src="script.js"></script>
+        
+        </div> <!-- closing body_container -->
+      
+
+      </form>
+      </div> <!--closing form_container-->
+
+      </div> <!-- Closing for main_container-->
+
+      
+
+  <footer>"CHANGING LIVES BUILDING A SAFER NATION"</footer>
+
+  </body>
+</html>
