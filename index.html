@@ -8,8 +8,7 @@
 
   </head>
   <body>
-
-      <div id="main-container">
+    <div id="main-container">
         <div id="bjmp_header">
         <h3> REPUBLIC OF THE PHILIPPINES</h3>
         <h3> DEPARTMENT OF INTERIOR AND LOCAL GOVERNMENT</h3>
@@ -21,18 +20,195 @@
         <h3>Email Address: nir.lacastellsanamj@bjmp.gov.ph Website: nir.bjmp.gov.ph</h3>
         </div> <!-- closing bjmp_header -->
 
+      <div id="navigation_Bar">
+        <nav aria-label="Main navigation">
+          <ul>
+            <li><a class="nav-link active" href="#home_page">Home</a></li>
+            <li><a class="nav-link" href="#pmar_container">PMAR</a></li>
+            <li><a class="nav-link" href="#aar_container">AAR</a></li>
+            <li><a class="nav-link" href="#coaching_page">COACHING</a></li>
+            <li><a class="nav-link" href="#spms_page">SPMS INTERFACE</a></li>
+          </ul>
+        </nav>
+      </div> <!-- closing for #navigation_bar -->
+
+      <div id="home_page" class="pageView">
+          <h1>WELCOME TO THE HOMEPAGE</h1>
+
+          <p>PERFORMANCE MANAGEMENT</p>
+      </div> <!-- closing for #home_page -->
+
+      <section id="coaching_page" class="pageView placeholder-page" hidden>
+        <h1>COACHING</h1>
+        <p>This section is not available yet.</p>
+      </section>
+
+      <section id="spms_page" class="pageView placeholder-page" hidden>
+        <h1>SPMS INTERFACE</h1>
+        <p>This section is not available yet.</p>
+      </section>
+      
+      <!-- !!!!!!!!!! PMAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! PMAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! PMAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+       <div id="pmar_container" class="pmar_container">
+
+    <h1>PERSONNEL WEEKLY ACCOMPLISHMENT REPORT </h1>
+  
+
+  <div id="name-container">
+      <label class="label" for="personnel">Please select your name</label>
+      <select id="personnel" name="personnel">
+       <option value="">Loading...</option>
+      </select>
+  </div> <!-- closing #name-container -->
+
+  <div id="office-container">
+    <label class="label" for="offices">Office/Division/Section/Unit</label>
+    <select id="offices" name="office">
+      <option value="">LOADING.. Please Wait </option>
+    </select>
+  </div> <!-- closing #office-container -->
+
+  <div id="date-coverage">
+  <label class="label">Date Covered</label>
+    <label for="months">Choose a month:</label>
+<select id="months" name="months">
+  <option value="">SELECT MONTH</option>
+  <option value="01">January</option>
+  <option value="02">February</option>
+  <option value="03">March</option>
+  <option value="04">April</option>
+  <option value="05">May</option>
+  <option value="06">June</option>
+  <option value="07">July</option>
+  <option value="08">August</option>
+  <option value="09">September</option>
+  <option value="10">October</option>
+  <option value="11">November</option>
+  <option value="12">December</option>
+</select>
+
+            <label class="week-num"> Week Number</label>
+            <select class="weekNo" name="week" aria-label="Week number">
+            <option value="">-- Select Week --</option>
+            <option value="Week 1">Week 1</option>
+            <option value="Week 2">Week 2</option>
+            <option value="Week 3">Week 3</option>
+            <option value="Week 4">Week 4</option>
+            <option value="Week 5">Week 5</option>
+            </select>
+            
+  </div> <!-- closing #div_coverage -->
+
+  <table id="accomplishmentTable">
+
+    <thead>
+        <tr>
+
+            <th>Major Final Output</th>
+            <th>ACTUAL NO.</th>
+            <th>PDL BENEFITTED </th>
+            <th>PERSONNEL BENEFITTED</th>
+            <th>Remarks</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody id="tableBody">
+
+        <tr class="entry-row">
+
+            <td>
+                <select class="mfo">
+                   <option value="">Loading...</option>
+                </select>
+            </td>
+
+            <td>
+                <input 
+                type="text" 
+                inputmode="numeric" 
+                class="actual" 
+                value="N/A"
+                data-default="N/A"
+                aria-label="Actual number"
+               />
+            </td>
+            <td>
+            <input 
+              type="text" 
+              inputmode="numeric" 
+              class="PDL-benefitted"
+              value="N/A"
+              data-default="N/A"
+              aria-label="PDL benefitted"
+              />
+            </td>
+            <td>
+              <input 
+              type="text" 
+              inputmode="numeric" 
+              class="Personnel-Benefitted"
+              value="N/A"
+              data-default="N/A"
+              aria-label="Personnel benefitted"
+              />
+            </td>            
+
+            <td>
+                <textarea
+                      class="remarks"
+                      placeholder="Evidenciary Requirements"
+                ></textarea>
+            </td>
+
+            <td>
+                <button type="button" class="delete-row" aria-label="Delete row">🗑</button>
+            </td>
+
+        </tr>
+       
+    </tbody>
+
+</table>
+    
+<div class="buttons">
+
+<button type="button" onclick="addRow()">
+    + Add Row
+</button>
+
+<button
+    id="submitBtn"
+    type="button"
+    onclick="submitReport()">
+    Save Report
+</button>
 
 
-      <div id="form_container">
-        <h1> AFTER ACTIVITY REPORT</h1>
-      <form id="activityReport">
+</div> <!-- closing #button -->
+
+       </div>  <!-- closing for #pmar_container -->
+
+      <!-- !!!!!!!!!! PMAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! PMAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! PMAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! **************************** !!!!!!!!!!!!!! -->   
+      <!-- !!!!!!!!!! **************************** !!!!!!!!!!!!!! -->    
+      <!-- !!!!!!!!!! AAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! AAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+      <!-- !!!!!!!!!! AAR CONTAINER STARTS HERE !!!!!!!!!!!!!! -->
+      <section id="aar_container" aria-labelledby="aar-title">
+        <h1 id="aar-title">AFTER ACTIVITY REPORT</h1>
+      <form id="activityReport" novalidate>
 
         <div id="head_container">
         <label for="subject">SUBJECT</label>
          <textarea id="subject" name="subject" rows="2" cols="40"></textarea>
 
         <label for="date">DATE</label>
-        <input type="date" name="date" id="date">
+        <input type="date" name="date" id="date" required>
 
         </div> <!-- closing - head_container -->
 
@@ -52,15 +228,13 @@
         <textarea id="purpose" name="purpose" rows="2" cols="40"></textarea>
 
         <label for="places_covered">3. PLACES COVERED</label>
-        <textarea id="places_covered" name="places_covered" rows="2" cols="40">
-        </textarea>
+        <textarea id="places_covered" name="places_covered" rows="2" cols="40"></textarea>
 
         <label for="dates_covered">4. DATES COVERED</label>
         <input type="text" id="dates_covered" name="dates_covered">
 
         <label for="participants">5. PARTICIPANTS</label>
-        <textarea id="participants" name="participants" rows="1" cols="40">
-        </textarea>
+        <textarea id="participants" name="participants" rows="1" cols="40"></textarea>
 
         <div id="narrative-container">
           <label for="narrative_1">6. NARRATIVES</label>
@@ -75,15 +249,18 @@
         <textarea id="issues_concerns" name="issues_concerns" rows="2" cols="40"></textarea>
 
 
-        <button type="button" onclick="createDoc">GENERATE AFTER ACTIVITY REPORT</button>
-
-        <script src="script.js"></script>
+        <button type="submit" id="generateReportBtn">GENERATE AFTER ACTIVITY REPORT</button>
         
         </div> <!-- closing body_container -->
       
 
       </form>
-      </div> <!--closing form_container-->
+      </section> <!-- closing aar_container -->
+
+      <script src="script.js" defer></script>
+      <!-- !!!!!!!!!! AAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->    
+      <!-- !!!!!!!!!! AAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->    
+      <!-- !!!!!!!!!! AAR CONTAINER ENDS HERE !!!!!!!!!!!!!! -->    
 
       </div> <!-- Closing for main_container-->
 

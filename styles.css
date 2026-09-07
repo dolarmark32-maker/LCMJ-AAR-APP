@@ -116,6 +116,7 @@ label {
 /* 16px font size prevents automatic zooming on iOS Safari */
 input[type="text"],
 input[type="date"],
+select,
 textarea {
   width: 100%;
   background: rgba(8, 15, 26, 0.85);
@@ -131,15 +132,111 @@ textarea {
 
 input[type="text"]:focus,
 input[type="date"]:focus,
+select:focus,
 textarea:focus {
   border-color: #38bdf8;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
   background: rgba(15, 28, 44, 0.95);
 }
 
+select {
+  min-height: 44px;
+  cursor: pointer;
+}
+
 textarea {
   resize: vertical;
   min-height: 75px;
+}
+
+#pmar_container,
+#aar_container {
+  width: 100%;
+}
+
+/* ==========================================
+   NAVIGATION BAR
+   ========================================== */
+#navigation_Bar {
+  width: 100%;
+  margin: 0 0 24px;
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+}
+
+#navigation_Bar nav {
+  background: rgba(8, 15, 26, 0.92);
+  border: 1px solid #0369a1;
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+#navigation_Bar ul {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  list-style: none;
+  min-width: max-content;
+}
+
+#navigation_Bar a {
+  display: block;
+  padding: 13px 14px;
+  color: #bae6fd;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#navigation_Bar a:hover,
+#navigation_Bar a.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.placeholder-page {
+  text-align: center;
+  padding: 40px 10px;
+}
+
+.placeholder-page h1,
+#home_page h1 {
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#accomplishmentTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+#accomplishmentTable th,
+#accomplishmentTable td {
+  padding: 8px;
+  border: 1px solid #0369a1;
+  vertical-align: top;
+}
+
+#accomplishmentTable input,
+#accomplishmentTable select,
+#accomplishmentTable textarea {
+  min-width: 0;
+}
+
+#accomplishmentTable button {
+  padding: 8px;
+  cursor: pointer;
 }
 
 /* Style mobile date picker icon */
@@ -202,7 +299,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* Generate Report Submit Button */
-#body_container button[onclick="createDoc"] {
+#generateReportBtn {
   width: 100%;
   margin-top: 25px;
   padding: 16px;
@@ -218,13 +315,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transition: all 0.25s ease-in-out;
 }
 
-#body_container button[onclick="createDoc"]:hover {
+#generateReportBtn:hover {
   background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
   box-shadow: 0 6px 18px rgba(56, 189, 248, 0.5);
   transform: translateY(-2px);
 }
 
-#body_container button[onclick="createDoc"]:active,
+#generateReportBtn:active,
 #add_reference:active,
 #add_narrative:active {
   transform: translateY(0);
@@ -247,6 +344,17 @@ footer {
 /* ==========================================
    DESKTOP RESPONSIVENESS
    ========================================== */
+@media (max-width: 599px) {
+  #navigation_Bar ul {
+    justify-content: flex-start;
+  }
+
+  #navigation_Bar a {
+    padding: 12px 10px;
+    font-size: 0.68rem;
+  }
+}
+
 @media (min-width: 600px) {
   #main-container {
     padding: 35px 30px;
@@ -260,7 +368,9 @@ footer {
     font-size: 0.82rem;
   }
 
-  #form_container h1 {
-    font-size: 1.5rem;
+  #form_container h1,
+#pmar_container > h1,
+#aar_container > h1 {
+  font-size: 1.5rem;
   }
 }
