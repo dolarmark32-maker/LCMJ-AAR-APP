@@ -29,17 +29,78 @@ function renumberReferences() {
   });
 }
 
-function addNarrative() {
-  const container = $('#narrative-container');
-  const wrapper = document.createElement('div');
-  wrapper.className = 'narrative-group';
-  wrapper.innerHTML = `
-    <textarea name="narrative[]" aria-label="Narrative"></textarea>
-    <button type="button" class="btn-remove" aria-label="Remove narrative">✕</button>
-  `;
-  wrapper.querySelector('.btn-remove').addEventListener('click', () => wrapper.remove());
-  container.appendChild(wrapper);
+function renumberNarratives() {
+  $$('#narrative-container .narrative-group').forEach((wrapper, index) => {
+    const number = index + 1;
+    const textarea = $('textarea', wrapper);
+    textarea.name = `narrative_${number}`;
+  });
 }
+
+function addNarrative() {
+
+  const container = $('#narrative-container');
+
+  const wrapper = document.createElement('div');
+
+  wrapper.className = 'narrative-group';
+
+
+  wrapper.innerHTML = `
+    <textarea
+      name="narrative[]"
+      aria-label="Narrative"
+    ></textarea>
+
+    <button
+      type="button"
+      class="btn-remove"
+      aria-label="Remove narrative"
+    >
+      ✕
+    </button>
+  `;
+
+
+  wrapper
+    .querySelector('.btn-remove')
+    .addEventListener('click', () => {
+
+      wrapper.remove();
+
+      renumberNarratives();
+
+    });
+
+
+  container.appendChild(wrapper);
+
+  renumberNarratives();
+}
+
+function renumberNarratives() {
+
+  const narratives =
+    $$('#narrative-container .narrative-group');
+
+
+  narratives.forEach((group, index) => {
+
+    const textarea =
+      $('textarea', group);
+
+    const letter =
+      String.fromCharCode(97 + index);
+
+    textarea.setAttribute(
+      'data-narrative-letter',
+      letter
+    );
+
+  });
+
+}
+
 
 function createEntryRow() {
   const row = document.createElement('tr');
@@ -76,60 +137,217 @@ function submitReport() {
   console.log('PMAR report:', rows);
 }
 
-const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+// ==========================================
+// AAR FILE UPLOAD SETTINGS
+// ==========================================
+
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5 MB per image
+
+
+// ==========================================
+// FILE INPUT SETUP
+// ==========================================
 
 function setupFileInput(inputId) {
+
   const input = document.getElementById(inputId);
+
   if (!input) return;
 
   const status = document.createElement('small');
+
   status.className = 'file-status';
+
   status.setAttribute('aria-live', 'polite');
+
   input.insertAdjacentElement('afterend', status);
 
+
   input.addEventListener('change', () => {
-    const [file] = input.files;
+
+    const files = [...input.files];
+
     status.className = 'file-status';
 
-    if (!file) {
-      status.textContent = 'No file selected';
+
+    // No files selected
+    if (files.length === 0) {
+
+      status.textContent = 'No files selected';
+
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      input.value = '';
-      status.classList.add('file-error');
-      status.textContent = 'Please select a PNG, JPEG, or WebP image.';
-      return;
+
+    // Check every selected file
+    for (const file of files) {
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+
+        input.value = '';
+
+        status.classList.add('file-error');
+
+        status.textContent =
+          `${file.name} is not a valid image. Please use PNG, JPEG, or WebP.`;
+
+        return;
+      }
+
+
+      // Check file size
+      if (file.size > MAX_UPLOAD_SIZE) {
+
+        input.value = '';
+
+        status.classList.add('file-error');
+
+        status.textContent =
+          `${file.name} is larger than 5 MB.`;
+
+        return;
+      }
+
     }
 
-    if (file.size > MAX_UPLOAD_SIZE) {
-      input.value = '';
-      status.classList.add('file-error');
-      status.textContent = 'The image must be 5 MB or smaller.';
-      return;
-    }
 
+    // Everything is valid
     status.classList.add('file-selected');
-    status.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+
+    status.textContent =
+      `${files.length} image${files.length > 1 ? 's' : ''} selected`;
+
   });
 }
 
+
+// ==========================================
+// COLLECT AAR DATA
+// ==========================================
+
 function createDoc() {
+
   const form = $('#activityReport');
+
+  // Validate required fields
   if (!form.checkValidity()) {
+
     form.reportValidity();
+
     return;
   }
 
-  const formData = new FormData(form);
-  const report = Object.fromEntries(formData.entries());
-  report.documentations = $('#documentations')?.files[0] || null;
-  report.attendance = $('#attendance')?.files[0] || null;
+
+  // ------------------------------------------
+  // BASIC FORM DATA
+  // ------------------------------------------
+
+  const subject =
+    $('#subject').value.trim();
+
+  const date =
+    $('#date').value;
+
+  const purpose =
+    $('#purpose').value.trim();
+
+  const placesCovered =
+    $('#places_covered').value.trim();
+
+  const datesCovered =
+    $('#dates_covered').value.trim();
+
+  const participants =
+    $('#participants').value.trim();
+
+  const issuesConcerns =
+    $('#issues_concerns').value.trim();
+
+
+  // ------------------------------------------
+  // REFERENCES
+  // ------------------------------------------
+
+  const references = $$('#reference-container textarea')
+    .map(textarea => textarea.value.trim())
+    .filter(value => value !== '');
+
+
+  // ------------------------------------------
+  // NARRATIVES
+  // ------------------------------------------
+
+  const narratives = $$('#narrative-container textarea')
+    .map(textarea => textarea.value.trim())
+    .filter(value => value !== '');
+
+
+  // ------------------------------------------
+  // DOCUMENTATION PICTURES
+  // ------------------------------------------
+
+  const documentationFiles =
+    [...($('#documentations')?.files || [])];
+
+
+  // ------------------------------------------
+  // ATTENDANCE PICTURES
+  // ------------------------------------------
+
+  const attendanceFiles =
+    [...($('#attendance')?.files || [])];
+
+
+  // ------------------------------------------
+  // PREPARE REPORT OBJECT
+  // ------------------------------------------
+
+  const report = {
+
+    subject: subject,
+
+    date: date,
+
+    references: references,
+
+    purpose: purpose,
+
+    placesCovered: placesCovered,
+
+    datesCovered: datesCovered,
+
+    participants: participants,
+
+    narratives: narratives,
+
+    issuesConcerns: issuesConcerns,
+
+    documentationFiles: documentationFiles,
+
+    attendanceFiles: attendanceFiles
+
+  };
+
 
   console.log('AAR report:', report);
-}
 
+  console.log(
+    'Documentation pictures:',
+    documentationFiles.length
+  );
+
+  console.log(
+    'Attendance pictures:',
+    attendanceFiles.length
+  );
+
+  console.log(
+    'Narratives:',
+    narratives.length
+  );
+
+}
 
 
 document.addEventListener('focusin', ({ target }) => {
