@@ -141,12 +141,18 @@ function submitReport() {
 // AAR FILE UPLOAD SETTINGS
 // ==========================================
 
-const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5 MB per image
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5 MB per original image
+const MAX_IMAGE_WIDTH = 1600;
+const JPEG_QUALITY = 0.80;
 
 
 // ==========================================
 // FILE INPUT SETUP
 // ==========================================
+
+// ------------------------------------------
+// SETUP FILE INPUT
+// ------------------------------------------
 
 function setupFileInput(inputId) {
 
@@ -154,23 +160,31 @@ function setupFileInput(inputId) {
 
   if (!input) return;
 
+  // Create status message
   const status = document.createElement('small');
-
   status.className = 'file-status';
-
   status.setAttribute('aria-live', 'polite');
 
   input.insertAdjacentElement('afterend', status);
 
 
+  // Create preview container
+  const preview = document.createElement('div');
+  preview.className = 'image-preview-container';
+
+  input.insertAdjacentElement('afterend', preview);
+
+
   input.addEventListener('change', () => {
 
-    const files = [...input.files];
+    preview.innerHTML = '';
 
     status.className = 'file-status';
 
 
-    // No files selected
+    const files = [...input.files];
+
+
     if (files.length === 0) {
 
       status.textContent = 'No files selected';
@@ -179,10 +193,12 @@ function setupFileInput(inputId) {
     }
 
 
-    // Check every selected file
+    // ------------------------------------------
+    // Validate all selected images
+    // ------------------------------------------
+
     for (const file of files) {
 
-      // Check file type
       if (!file.type.startsWith('image/')) {
 
         input.value = '';
@@ -190,13 +206,12 @@ function setupFileInput(inputId) {
         status.classList.add('file-error');
 
         status.textContent =
-          `${file.name} is not a valid image. Please use PNG, JPEG, or WebP.`;
+          `${file.name} is not a valid image.`;
 
         return;
       }
 
 
-      // Check file size
       if (file.size > MAX_UPLOAD_SIZE) {
 
         input.value = '';
@@ -212,13 +227,260 @@ function setupFileInput(inputId) {
     }
 
 
-    // Everything is valid
+    // ------------------------------------------
+    // Display selected files
+    // ------------------------------------------
+
     status.classList.add('file-selected');
 
     status.textContent =
       `${files.length} image${files.length > 1 ? 's' : ''} selected`;
 
+
+    files.forEach((file, index) => {
+
+      createImagePreview(
+        file,
+        preview,
+        index
+      );
+
+    });
+
   });
+}
+
+
+// ------------------------------------------
+// CREATE IMAGE PREVIEW
+// ------------------------------------------
+
+function createImagePreview(file, container, index) {
+
+  const wrapper = document.createElement('div');
+
+  wrapper.className = 'image-preview';
+
+
+  const image = document.createElement('img');
+
+  image.alt = file.name;
+
+
+  const info = document.createElement('div');
+
+  info.className = 'image-preview-info';
+
+  info.textContent =
+    `${index + 1}. ${file.name}`;
+
+
+  const size = document.createElement('small');
+
+  size.textContent =
+    `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+
+
+  const removeButton = document.createElement('button');
+
+  removeButton.type = 'button';
+
+  removeButton.className = 'btn-remove-image';
+
+  removeButton.textContent = '✕';
+
+
+  removeButton.addEventListener('click', () => {
+
+    wrapper.remove();
+
+    removeFileFromInput(
+      document.querySelector(
+        `#${CSS.escape(container.previousElementSibling.id)}`
+      ),
+      index
+    );
+
+  });
+
+
+  const reader = new FileReader();
+
+  reader.onload = (event) => {
+
+    image.src = event.target.result;
+
+  };
+
+  reader.readAsDataURL(file);
+
+
+  wrapper.appendChild(image);
+
+  wrapper.appendChild(info);
+
+  wrapper.appendChild(size);
+
+  wrapper.appendChild(removeButton);
+
+  container.appendChild(wrapper);
+
+}
+
+
+// ------------------------------------------
+// REMOVE FILE
+// ------------------------------------------
+
+function removeFileFromInput(input, index) {
+
+  if (!input || !input.files) return;
+
+
+  const files =
+    [...input.files];
+
+
+  files.splice(index, 1);
+
+
+  const dataTransfer =
+    new DataTransfer();
+
+
+  files.forEach(file => {
+
+    dataTransfer.items.add(file);
+
+  });
+
+
+  input.files =
+    dataTransfer.files;
+
+
+  // Trigger change so previews/status update
+  input.dispatchEvent(
+    new Event('change')
+  );
+
+}
+
+
+// ------------------------------------------
+// COMPRESS IMAGE
+// ------------------------------------------
+
+function compressImage(file) {
+
+  return new Promise((resolve, reject) => {
+
+    const reader = new FileReader();
+
+
+    reader.onload = (event) => {
+
+      const img = new Image();
+
+
+      img.onload = () => {
+
+        let width = img.width;
+        let height = img.height;
+
+
+        // Resize large images
+        if (width > MAX_IMAGE_WIDTH) {
+
+          const ratio =
+            MAX_IMAGE_WIDTH / width;
+
+          width =
+            MAX_IMAGE_WIDTH;
+
+          height =
+            Math.round(height * ratio);
+
+        }
+
+
+        const canvas =
+          document.createElement('canvas');
+
+        canvas.width = width;
+        canvas.height = height;
+
+
+        const ctx =
+          canvas.getContext('2d');
+
+
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
+
+
+        canvas.toBlob(
+          blob => {
+
+            if (!blob) {
+
+              reject(
+                new Error(
+                  'Unable to compress image.'
+                )
+              );
+
+              return;
+            }
+
+
+            resolve(blob);
+
+          },
+          'image/jpeg',
+          JPEG_QUALITY
+        );
+
+      };
+
+
+      img.onerror = () => {
+
+        reject(
+          new Error(
+            `Unable to read ${file.name}`
+          )
+        );
+
+      };
+
+
+      img.src =
+        event.target.result;
+
+    };
+
+
+    reader.onerror = () => {
+
+      reject(
+        new Error(
+          `Unable to read ${file.name}`
+        )
+      );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+  });
+
 }
 
 
