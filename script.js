@@ -76,15 +76,61 @@ function submitReport() {
   console.log('PMAR report:', rows);
 }
 
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+
+function setupFileInput(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  const status = document.createElement('small');
+  status.className = 'file-status';
+  status.setAttribute('aria-live', 'polite');
+  input.insertAdjacentElement('afterend', status);
+
+  input.addEventListener('change', () => {
+    const [file] = input.files;
+    status.className = 'file-status';
+
+    if (!file) {
+      status.textContent = 'No file selected';
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      status.classList.add('file-error');
+      status.textContent = 'Please select a PNG, JPEG, or WebP image.';
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE) {
+      input.value = '';
+      status.classList.add('file-error');
+      status.textContent = 'The image must be 5 MB or smaller.';
+      return;
+    }
+
+    status.classList.add('file-selected');
+    status.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+  });
+}
+
 function createDoc() {
   const form = $('#activityReport');
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
   }
-  const report = Object.fromEntries(new FormData(form).entries());
+
+  const formData = new FormData(form);
+  const report = Object.fromEntries(formData.entries());
+  report.documentations = $('#documentations')?.files[0] || null;
+  report.attendance = $('#attendance')?.files[0] || null;
+
   console.log('AAR report:', report);
 }
+
+
 
 document.addEventListener('focusin', ({ target }) => {
   if (target.matches('[data-default]') && target.value === target.dataset.default) target.value = '';
@@ -131,4 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renumberReferences();
+  setupFileInput('documentations');
+  setupFileInput('attendance');
 });
