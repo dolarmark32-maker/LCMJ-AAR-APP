@@ -395,6 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renumberReferences();
-  setupFileInput('documentations');
-  setupFileInput('attendance');
+renumberNarratives();
+
+setupFileInput('documentations');
+setupFileInput('attendance');
 });
