@@ -4,8 +4,14 @@ const AAR_API_URL =
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
+// ==========================================
+// DYNAMIC FORM SECTIONS
+// ==========================================
+
 function addReference() {
   const container = $('#reference-container');
+  if (!container) return;
+
   const group = document.createElement('div');
   group.className = 'reference-group';
   group.innerHTML = `
@@ -26,84 +32,47 @@ function renumberReferences() {
     const number = index + 1;
     const label = $('label', group);
     const textarea = $('textarea', group);
-    label.textContent = `${number}. REFERENCE`;
-    label.htmlFor = `reference_${number}`;
-    textarea.id = `reference_${number}`;
-  });
-}
-
-function renumberNarratives() {
-  $$('#narrative-container .narrative-group').forEach((wrapper, index) => {
-    const number = index + 1;
-    const textarea = $('textarea', wrapper);
-    textarea.name = `narrative_${number}`;
+    if (label) {
+      label.textContent = `${number}. REFERENCE`;
+      label.htmlFor = `reference_${number}`;
+    }
+    if (textarea) textarea.id = `reference_${number}`;
   });
 }
 
 function addNarrative() {
-
   const container = $('#narrative-container');
+  if (!container) return;
 
   const wrapper = document.createElement('div');
-
   wrapper.className = 'narrative-group';
-
-
   wrapper.innerHTML = `
-    <textarea
-      name="narrative[]"
-      aria-label="Narrative"
-    ></textarea>
-
-    <button
-      type="button"
-      class="btn-remove"
-      aria-label="Remove narrative"
-    >
-      ✕
-    </button>
+    <textarea name="narrative[]" aria-label="Narrative"></textarea>
+    <button type="button" class="btn-remove" aria-label="Remove narrative">✕</button>
   `;
-
-
-  wrapper
-    .querySelector('.btn-remove')
-    .addEventListener('click', () => {
-
-      wrapper.remove();
-
-      renumberNarratives();
-
-    });
-
-
+  wrapper.querySelector('.btn-remove').addEventListener('click', () => {
+    wrapper.remove();
+    renumberNarratives();
+  });
   container.appendChild(wrapper);
-
   renumberNarratives();
 }
 
+// Single merged renumberNarratives function
 function renumberNarratives() {
-
-  const narratives =
-    $$('#narrative-container .narrative-group');
-
-
-  narratives.forEach((group, index) => {
-
-    const textarea =
-      $('textarea', group);
-
-    const letter =
-      String.fromCharCode(97 + index);
-
-    textarea.setAttribute(
-      'data-narrative-letter',
-      letter
-    );
-
+  $$('#narrative-container .narrative-group').forEach((group, index) => {
+    const textarea = $('textarea', group);
+    if (textarea) {
+      const letter = String.fromCharCode(97 + index);
+      textarea.setAttribute('data-narrative-letter', letter);
+      textarea.name = 'narrative[]'; // Preserved for FormData collection
+    }
   });
-
 }
 
+// ==========================================
+// PMAR TABLE MANAGEMENT
+// ==========================================
 
 function createEntryRow() {
   const row = document.createElement('tr');
@@ -121,7 +90,8 @@ function createEntryRow() {
 }
 
 function addRow() {
-  $('#tableBody').appendChild(createEntryRow());
+  const body = $('#tableBody');
+  if (body) body.appendChild(createEntryRow());
 }
 
 function deleteRow(row) {
@@ -131,500 +101,262 @@ function deleteRow(row) {
 
 function submitReport() {
   const rows = $$('#tableBody .entry-row').map((row) => ({
-    mfo: $('.mfo', row).value,
-    actual: $('.actual', row).value,
-    pdlBenefitted: $('.PDL-benefitted', row).value,
-    personnelBenefitted: $('.Personnel-Benefitted', row).value,
-    remarks: $('.remarks', row).value.trim()
+    mfo: $('.mfo', row)?.value || '',
+    actual: $('.actual', row)?.value || '',
+    pdlBenefitted: $('.PDL-benefitted', row)?.value || '',
+    personnelBenefitted: $('.Personnel-Benefitted', row)?.value || '',
+    remarks: $('.remarks', row)?.value.trim() || ''
   }));
   console.log('PMAR report:', rows);
+  return rows;
 }
 
 // ==========================================
-// AAR FILE UPLOAD SETTINGS
+// AAR FILE UPLOAD & COMPRESSION
 // ==========================================
 
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024; // 5 MB per original image
 const MAX_IMAGE_WIDTH = 1600;
 const JPEG_QUALITY = 0.80;
 
-
-// ==========================================
-// FILE INPUT SETUP
-// ==========================================
-
-// ------------------------------------------
-// SETUP FILE INPUT
-// ------------------------------------------
-
 function setupFileInput(inputId) {
-
   const input = document.getElementById(inputId);
-
   if (!input) return;
 
-  // Create status message
   const status = document.createElement('small');
   status.className = 'file-status';
   status.setAttribute('aria-live', 'polite');
 
-  input.insertAdjacentElement('afterend', status);
-
-
-  // Create preview container
   const preview = document.createElement('div');
   preview.className = 'image-preview-container';
 
+  input.insertAdjacentElement('afterend', status);
   input.insertAdjacentElement('afterend', preview);
 
-
   input.addEventListener('change', () => {
-
     preview.innerHTML = '';
-
     status.className = 'file-status';
-
 
     const files = [...input.files];
 
-
     if (files.length === 0) {
-
       status.textContent = 'No files selected';
-
       return;
     }
 
-
-    // ------------------------------------------
-    // Validate all selected images
-    // ------------------------------------------
-
     for (const file of files) {
-
       if (!file.type.startsWith('image/')) {
-
         input.value = '';
-
         status.classList.add('file-error');
-
-        status.textContent =
-          `${file.name} is not a valid image.`;
-
+        status.textContent = `${file.name} is not a valid image.`;
         return;
       }
-
 
       if (file.size > MAX_UPLOAD_SIZE) {
-
         input.value = '';
-
         status.classList.add('file-error');
-
-        status.textContent =
-          `${file.name} is larger than 5 MB.`;
-
+        status.textContent = `${file.name} is larger than 5 MB.`;
         return;
       }
-
     }
 
-
-    // ------------------------------------------
-    // Display selected files
-    // ------------------------------------------
-
     status.classList.add('file-selected');
-
-    status.textContent =
-      `${files.length} image${files.length > 1 ? 's' : ''} selected`;
-
+    status.textContent = `${files.length} image${files.length > 1 ? 's' : ''} selected`;
 
     files.forEach((file, index) => {
-
-      createImagePreview(
-        file,
-        preview,
-        index
-      );
-
+      createImagePreview(file, preview, index, input);
     });
-
   });
 }
 
-
-// ------------------------------------------
-// CREATE IMAGE PREVIEW
-// ------------------------------------------
-
-function createImagePreview(file, container, index) {
-
+function createImagePreview(file, container, index, inputElement) {
   const wrapper = document.createElement('div');
-
   wrapper.className = 'image-preview';
 
-
   const image = document.createElement('img');
-
   image.alt = file.name;
 
-
   const info = document.createElement('div');
-
   info.className = 'image-preview-info';
-
-  info.textContent =
-    `${index + 1}. ${file.name}`;
-
+  info.textContent = `${index + 1}. ${file.name}`;
 
   const size = document.createElement('small');
-
-  size.textContent =
-    `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-
+  size.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
 
   const removeButton = document.createElement('button');
-
   removeButton.type = 'button';
-
   removeButton.className = 'btn-remove-image';
-
   removeButton.textContent = '✕';
 
-
   removeButton.addEventListener('click', () => {
-
-    wrapper.remove();
-
-    removeFileFromInput(
-      document.querySelector(
-        `#${CSS.escape(container.previousElementSibling.id)}`
-      ),
-      index
-    );
-
+    removeFileFromInput(inputElement, index);
   });
-
 
   const reader = new FileReader();
-
   reader.onload = (event) => {
-
     image.src = event.target.result;
-
   };
-
   reader.readAsDataURL(file);
 
-
   wrapper.appendChild(image);
-
   wrapper.appendChild(info);
-
   wrapper.appendChild(size);
-
   wrapper.appendChild(removeButton);
-
   container.appendChild(wrapper);
-
 }
-
-
-// ------------------------------------------
-// REMOVE FILE
-// ------------------------------------------
 
 function removeFileFromInput(input, index) {
-
   if (!input || !input.files) return;
 
-
-  const files =
-    [...input.files];
-
-
+  const files = [...input.files];
   files.splice(index, 1);
 
+  const dataTransfer = new DataTransfer();
+  files.forEach((file) => dataTransfer.items.add(file));
+  input.files = dataTransfer.files;
 
-  const dataTransfer =
-    new DataTransfer();
-
-
-  files.forEach(file => {
-
-    dataTransfer.items.add(file);
-
-  });
-
-
-  input.files =
-    dataTransfer.files;
-
-
-  // Trigger change so previews/status update
-  input.dispatchEvent(
-    new Event('change')
-  );
-
+  input.dispatchEvent(new Event('change'));
 }
 
-
-// ------------------------------------------
-// COMPRESS IMAGE
-// ------------------------------------------
-
 function compressImage(file) {
-
   return new Promise((resolve, reject) => {
-
     const reader = new FileReader();
-
-
     reader.onload = (event) => {
-
       const img = new Image();
-
-
       img.onload = () => {
-
         let width = img.width;
         let height = img.height;
 
-
-        // Resize large images
         if (width > MAX_IMAGE_WIDTH) {
-
-          const ratio =
-            MAX_IMAGE_WIDTH / width;
-
-          width =
-            MAX_IMAGE_WIDTH;
-
-          height =
-            Math.round(height * ratio);
-
+          const ratio = MAX_IMAGE_WIDTH / width;
+          width = MAX_IMAGE_WIDTH;
+          height = Math.round(height * ratio);
         }
 
-
-        const canvas =
-          document.createElement('canvas');
-
+        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
 
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
 
-        const ctx =
-          canvas.getContext('2d');
-
-
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          width,
-          height
-        );
-
-
-        canvas.toBlob(
-          blob => {
-
-            if (!blob) {
-
-              reject(
-                new Error(
-                  'Unable to compress image.'
-                )
-              );
-
-              return;
-            }
-
-
-            resolve(blob);
-
-          },
-          'image/jpeg',
-          JPEG_QUALITY
-        );
-
+        // Convert directly to Base64 string for API payload
+        resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
       };
-
-
-      img.onerror = () => {
-
-        reject(
-          new Error(
-            `Unable to read ${file.name}`
-          )
-        );
-
-      };
-
-
-      img.src =
-        event.target.result;
-
+      img.onerror = () => reject(new Error(`Unable to read ${file.name}`));
+      img.src = event.target.result;
     };
-
-
-    reader.onerror = () => {
-
-      reject(
-        new Error(
-          `Unable to read ${file.name}`
-        )
-      );
-
-    };
-
-
+    reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
     reader.readAsDataURL(file);
-
   });
-
 }
 
+async function processFileInputImages(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input || !input.files.length) return [];
+  const files = [...input.files];
+  return Promise.all(files.map((file) => compressImage(file)));
+}
 
 // ==========================================
-// COLLECT AAR DATA
+// COLLECT AAR DATA & SUBMIT
 // ==========================================
 
-function createDoc() {
-
+async function createDoc() {
   const form = $('#activityReport');
+  if (!form) return;
 
-  // Validate required fields
   if (!form.checkValidity()) {
-
     form.reportValidity();
-
     return;
   }
 
+  const button = $('#generateReportBtn');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'GENERATING REPORT...';
+  }
 
-  // ------------------------------------------
-  // BASIC FORM DATA
-  // ------------------------------------------
+  try {
+    const formData = new FormData(form);
 
-  const subject =
-    $('#subject').value.trim();
+    // Compress & convert selected images to Base64
+    const [pictures, attendance] = await Promise.all([
+      processFileInputImages('documentations'),
+      processFileInputImages('attendance')
+    ]);
 
-  const date =
-    $('#date').value;
+    const report = {
+      subject: formData.get('subject') || '',
+      date: formData.get('date') || '',
+      references: formData.getAll('reference[]'),
+      purpose: formData.get('purpose') || '',
+      placesCovered: formData.get('places_covered') || '',
+      datesCovered: formData.get('dates_covered') || '',
+      participants: formData.get('participants') || '',
+      narratives: formData.getAll('narrative[]'),
+      issuesConcerns: formData.get('issues_concerns') || '',
+      pictures,
+      attendance
+    };
 
-  const purpose =
-    $('#purpose').value.trim();
+    console.log('Sending AAR:', report);
 
-  const placesCovered =
-    $('#places_covered').value.trim();
+    const response = await fetch(AAR_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(report)
+    });
 
-  const datesCovered =
-    $('#dates_covered').value.trim();
+    if (!response.ok) {
+      throw new Error(`Server returned status code ${response.status}`);
+    }
 
-  const participants =
-    $('#participants').value.trim();
+    const result = await response.json();
+    console.log('Apps Script response:', result);
 
-  const issuesConcerns =
-    $('#issues_concerns').value.trim();
+    if (!result.success) {
+      throw new Error(result.error || 'Unable to generate the report.');
+    }
 
+    alert('After Activity Report generated successfully!');
 
-  // ------------------------------------------
-  // REFERENCES
-  // ------------------------------------------
-
-  const references = $$('#reference-container textarea')
-    .map(textarea => textarea.value.trim())
-    .filter(value => value !== '');
-
-
-  // ------------------------------------------
-  // NARRATIVES
-  // ------------------------------------------
-
-  const narratives = $$('#narrative-container textarea')
-    .map(textarea => textarea.value.trim())
-    .filter(value => value !== '');
-
-
-  // ------------------------------------------
-  // DOCUMENTATION PICTURES
-  // ------------------------------------------
-
-  const documentationFiles =
-    [...($('#documentations')?.files || [])];
-
-
-  // ------------------------------------------
-  // ATTENDANCE PICTURES
-  // ------------------------------------------
-
-  const attendanceFiles =
-    [...($('#attendance')?.files || [])];
-
-
-  // ------------------------------------------
-  // PREPARE REPORT OBJECT
-  // ------------------------------------------
-
-  const report = {
-
-    subject: subject,
-
-    date: date,
-
-    references: references,
-
-    purpose: purpose,
-
-    placesCovered: placesCovered,
-
-    datesCovered: datesCovered,
-
-    participants: participants,
-
-    narratives: narratives,
-
-    issuesConcerns: issuesConcerns,
-
-    documentationFiles: documentationFiles,
-
-    attendanceFiles: attendanceFiles
-
-  };
-
-
-  console.log('AAR report:', report);
-
-  console.log(
-    'Documentation pictures:',
-    documentationFiles.length
-  );
-
-  console.log(
-    'Attendance pictures:',
-    attendanceFiles.length
-  );
-
-  console.log(
-    'Narratives:',
-    narratives.length
-  );
-
+    if (result.documentUrl) {
+      window.open(result.documentUrl, '_blank');
+    }
+  } catch (error) {
+    console.error('AAR generation error:', error);
+    alert('Unable to generate the After Activity Report.\n\n' + error.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'GENERATE AFTER ACTIVITY REPORT';
+    }
+  }
 }
 
+// ==========================================
+// EVENT LISTENERS & INITIALIZATION
+// ==========================================
 
 document.addEventListener('focusin', ({ target }) => {
-  if (target.matches('[data-default]') && target.value === target.dataset.default) target.value = '';
+  if (target.matches('[data-default]') && target.value === target.dataset.default) {
+    target.value = '';
+  }
 });
 
 document.addEventListener('input', ({ target }) => {
-  if (target.matches('input[inputmode="numeric"]')) target.value = target.value.replace(/\D/g, '');
+  if (target.matches('input[inputmode="numeric"]')) {
+    target.value = target.value.replace(/\D/g, '');
+  }
 });
 
 document.addEventListener('focusout', ({ target }) => {
-  if (target.matches('[data-default]') && !target.value.trim()) target.value = target.dataset.default;
+  if (target.matches('[data-default]') && !target.value.trim()) {
+    target.value = target.dataset.default;
+  }
 });
 
 function showPage(pageId) {
@@ -650,18 +382,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialPage = window.location.hash.slice(1) || 'home_page';
   showPage(document.getElementById(initialPage) ? initialPage : 'home_page');
 
-  $('#activityReport').addEventListener('submit', (event) => {
-    event.preventDefault();
-    createDoc();
-  });
+  const activityReportForm = $('#activityReport');
+  if (activityReportForm) {
+    activityReportForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      createDoc();
+    });
+  }
 
-  $('#tableBody .delete-row').addEventListener('click', ({ currentTarget }) => {
-    deleteRow(currentTarget.closest('.entry-row'));
-  });
+  const initialDeleteBtn = $('#tableBody .delete-row');
+  if (initialDeleteBtn) {
+    initialDeleteBtn.addEventListener('click', ({ currentTarget }) => {
+      deleteRow(currentTarget.closest('.entry-row'));
+    });
+  }
 
   renumberReferences();
-renumberNarratives();
+  renumberNarratives();
 
-setupFileInput('documentations');
-setupFileInput('attendance');
+  setupFileInput('documentations');
+  setupFileInput('attendance');
 });
