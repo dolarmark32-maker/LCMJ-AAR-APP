@@ -1,3 +1,6 @@
+const AAR_API_URL =
+  'https://script.google.com/macros/s/AKfycbyrvr6bYzTOsysxO39A3aPgUZRzGdbMgSHsb3P0rV0Vj3-t55NDo-rr_Ywvxo7pNX8Tww/exec';
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
