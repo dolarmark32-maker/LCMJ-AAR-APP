@@ -491,6 +491,37 @@ function compressImage(file) {
 // COLLECT AAR DATA
 // ==========================================
 
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+
+      // FileReader returns:
+      // data:image/jpeg;base64,XXXXXX...
+      //
+      // Apps Script only needs the part after the comma.
+      const base64 = reader.result.split(',')[1];
+
+      resolve({
+        name: file.name,
+        mimeType: file.type,
+        data: base64
+      });
+
+    };
+
+    reader.onerror = () => {
+      reject(new Error(
+        `Unable to read image: ${file.name}`
+      ));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
 async function createDoc() {
 
   const form = $('#activityReport');
@@ -513,6 +544,50 @@ async function createDoc() {
 
     const formData =
       new FormData(form);
+
+      const documentationFiles =
+  document.getElementById('documentations').files;
+
+const attendanceFiles =
+  document.getElementById('attendance').files;
+
+console.log(
+  'Documentation files:',
+  documentationFiles
+);
+
+console.log(
+  'Attendance files:',
+  attendanceFiles
+);
+
+const pictures = [];
+
+for (const file of documentationFiles) {
+
+  console.log(
+    'Converting documentation:',
+    file.name
+  );
+
+  pictures.push(
+    await fileToBase64(file)
+  );
+}
+
+const attendance = [];
+
+for (const file of attendanceFiles) {
+
+  console.log(
+    'Converting attendance:',
+    file.name
+  );
+
+  attendance.push(
+    await fileToBase64(file)
+  );
+}
 
 
     const report = {
@@ -544,12 +619,9 @@ async function createDoc() {
       issuesConcerns:
         formData.get('issues_concerns') || '',
 
-      /*
-       * Pictures will be added later.
-       */
-      pictures: [],
+      pictures: pictures,
 
-      attendance: []
+      attendance: attendance
 
     };
 
