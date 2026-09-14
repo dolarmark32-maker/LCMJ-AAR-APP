@@ -625,6 +625,10 @@ for (const file of attendanceFiles) {
 
     };
 
+    console.log('FINAL REPORT:', report);
+    console.log('PICTURES COUNT:', report.pictures.length);
+    console.log('ATTENDANCE COUNT:', report.attendance.length);
+
 
     console.log(
       'Sending AAR:',
